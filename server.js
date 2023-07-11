@@ -1,6 +1,9 @@
+// Import libraries
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
+// Point to database file
 const database = require('./db/db.json');
 
 const PORT = 3001;
@@ -40,7 +43,34 @@ app.post('/api/notes', (req, res) => {
     console.log(`
     ------------------ Request Body ------------------`);
     console.log(requestBody);
-    res.json(requestBody);
+
+    const { title, text } = req.body;
+
+    if (title && text)
+    {
+        const newNote = {
+            title,
+            text
+        };
+
+        fs.appendFile('./db/db.json', newNote, (err) =>
+            err ? console.error(err) : console.log("New note added to JSON file")
+        );
+
+        const response = {
+            status: 'success',
+            body: newNote
+        };
+
+        console.log(response);
+
+        res.status(201).json(response);
+    }
+
+    else
+    {
+        res.status(500).json("Error posting new note");
+    }
 });
   
 app.delete('/api/notes/:id', (req, res) => res.send("Confirming that the DELETE ROUTE received this request"));
