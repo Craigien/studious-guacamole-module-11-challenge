@@ -54,26 +54,24 @@ app.post('/api/notes', (req, res) => {
             UUID: jsonuuid.id()
         };
 
-        fs.readFile('./db/db.json', (error, data) => {
-            err ? console.error(error) : console.log(data)
+        fs.readFile('./db/db.json', (err, data) => {
+            err ? console.error(err) : console.log(data)
 
             databaseParsed = JSON.parse(data);
             databaseParsed.push(newNote);
+
+            console.log(databaseParsed);
+
+            fs.writeFile('./db/db.json', JSON.stringify(databaseParsed), (err) =>
+            err ? console.error(err) : console.log("New note added to JSON file")
+            );
         });
 
         const response = {
             status: 'success',
             body: newNote
         };
-
-        // JSON.stringify(newNote);
-
-        // console.log(jsonuuid.id(newNote));
-
-        fs.appendFile('./db/db.json', JSON.stringify(newNote), (err) =>
-            err ? console.error(err) : console.log("New note added to JSON file")
-        );
-
+        
         res.status(201).json(response);
     }
 
