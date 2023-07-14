@@ -3,6 +3,9 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
+// Used to create UUID for each note
+const jsonuuid = require('json-uuid');
+
 // Point to database file
 const database = require('./db/db.json');
 
@@ -28,30 +31,48 @@ app.get('/notes', (req, res) => {
 app.get('/api/notes', (req, res) => res.json(database));
 
 app.post('/api/notes', (req, res) => {
-    const requestBody = req.body;
-    console.log(`
-    ------------------ Request Body ------------------`);
-    console.log(requestBody);
+    // const requestBody = req.body;
+    // console.log(`
+    // ------------------ Request Body ------------------`);
+    // console.log(requestBody);
+
+    // res.json(`${req.method} request received`);
+
+    // console.info(req.rawHeaders);
+
+    // console.info(`${req.method} request received`);
 
     const { title, text } = req.body;
 
     if (title && text)
     {
+        let databaseParsed;
+
         const newNote = {
             title,
-            text
+            text,
+            UUID: jsonuuid.id()
         };
 
-        fs.appendFile('./db/db.json', newNote, (err) =>
-            err ? console.error(err) : console.log("New note added to JSON file")
-        );
+        fs.readFile('./db/db.json', (error, data) => {
+            err ? console.error(error) : console.log(data)
+
+            databaseParsed = JSON.parse(data);
+            databaseParsed.push(newNote);
+        });
 
         const response = {
             status: 'success',
             body: newNote
         };
 
-        console.log(response);
+        // JSON.stringify(newNote);
+
+        // console.log(jsonuuid.id(newNote));
+
+        fs.appendFile('./db/db.json', JSON.stringify(newNote), (err) =>
+            err ? console.error(err) : console.log("New note added to JSON file")
+        );
 
         res.status(201).json(response);
     }
