@@ -7,7 +7,7 @@ const fs = require('fs');
 const jsonuuid = require('json-uuid');
 
 // Point to database file
-const database = require('./db/db.json');
+const database = 'db.json';
 
 const PORT = 3001;
 
@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 app.get('/', (req, res) =>
-  res.sendFile(path.join(__dirname, 'index.html'))
+  res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
 // -------------- Routes ---------------------
@@ -28,36 +28,37 @@ app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 });
 
-app.get('/api/notes', (req, res) => res.json(database));
+app.get('/api/notes', (req, res) => {
+
+    let root = {
+        root: path.join(__dirname, 'db')
+    };
+
+    return res.sendFile(database, root);
+});
 
 app.post('/api/notes', (req, res) => {
-    // const requestBody = req.body;
-    // console.log(`
-    // ------------------ Request Body ------------------`);
-    // console.log(requestBody);
-
-    // res.json(`${req.method} request received`);
-
-    // console.info(req.rawHeaders);
-
-    // console.info(`${req.method} request received`);
+    
+    console.log(`
+    ------------------ Request Body ------------------`);
+    console.log(req.body);
 
     const { title, text } = req.body;
 
     if (title && text)
     {
-        let databaseParsed;
-
         const newNote = {
             title,
             text,
-            UUID: jsonuuid.id()
+            id: jsonuuid.id(title)
         };
 
-        fs.readFile('./db/db.json', (err, data) => {
-            err ? console.error(err) : console.log(data)
+        console.log("New Note: " + newNote);
 
-            databaseParsed = JSON.parse(data);
+        fs.readFile('./db/db.json', (err, data) => {
+            // err ? console.error(err) : console.log(data)
+
+            let databaseParsed = JSON.parse(data);
             databaseParsed.push(newNote);
 
             console.log(databaseParsed);
@@ -66,13 +67,8 @@ app.post('/api/notes', (req, res) => {
             err ? console.error(err) : console.log("New note added to JSON file")
             );
         });
-
-        const response = {
-            status: 'success',
-            body: newNote
-        };
         
-        res.status(201).json(response);
+        return res.status(201).json(JSON.stringify(newNote));
     }
 
     else
@@ -81,14 +77,30 @@ app.post('/api/notes', (req, res) => {
     }
 });
   
-// app.delete('/api/notes/:id', (req, res) => res.send("Confirming that the DELETE ROUTE received this request"));
+// app.delete('/api/notes/:id', (req, res) => {
+//     const id = req.params.id;
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'index.html'))
+//     fs.readFile('./db/db.json', (err, data) => {
+//         err ? console.error(err) : console.log(data)
+
+//         JSON.parse(data);
+
+        
+//     })
 // });
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/index.html'))
+});
 
 // ------------------ Start Server -----------------------
 // listen() method is responsible for listening for incoming connections on the specified port 
 app.listen(PORT, () =>
     console.log(`Example app listening at http://localhost:${PORT}`)
 );
+
+// To Do
+
+// Setup delete route
+// Comments
+// README
