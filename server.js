@@ -23,7 +23,6 @@ app.get('/', (req, res) =>
 );
 
 // -------------- Routes ---------------------
-
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 });
@@ -77,17 +76,28 @@ app.post('/api/notes', (req, res) => {
     }
 });
   
-// app.delete('/api/notes/:id', (req, res) => {
-//     const id = req.params.id;
+app.delete('/api/notes/:id', (req, res) => {
 
-//     fs.readFile('./db/db.json', (err, data) => {
-//         err ? console.error(err) : console.log(data)
+    const id = req.params.id;
 
-//         JSON.parse(data);
+    console.log("id: " + id);
 
-        
-//     })
-// });
+    fs.readFile('./db/db.json', (err, data) => {
+        err ? console.error(err) : console.log(data)
+
+        let parsedDatabase = JSON.parse(data);
+
+        console.log(parsedDatabase);
+
+        const newDatabase = parsedDatabase.filter((note) => note.id !== id);
+
+        fs.writeFile('./db/db.json', JSON.stringify(newDatabase), (err) =>
+        err ? console.error(err) : console.log("Removed note with id of: " + id)
+        );
+
+        return res.json('Successfully deleted note with ID of ' + + id);
+    });
+});
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html'))
@@ -101,6 +111,5 @@ app.listen(PORT, () =>
 
 // To Do
 
-// Setup delete route
 // Comments
 // README
