@@ -18,15 +18,19 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
+// Set default route to go to index.html page
 app.get('/', (req, res) =>
   res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
 // -------------- Routes ---------------------
+
+// Notes routes will return notes.html page
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 });
 
+// Returns all notes in db.json file
 app.get('/api/notes', (req, res) => {
 
     let root = {
@@ -36,11 +40,8 @@ app.get('/api/notes', (req, res) => {
     return res.sendFile(database, root);
 });
 
+// Add new note to database
 app.post('/api/notes', (req, res) => {
-    
-    console.log(`
-    ------------------ Request Body ------------------`);
-    console.log(req.body);
 
     const { title, text } = req.body;
 
@@ -52,16 +53,13 @@ app.post('/api/notes', (req, res) => {
             id: jsonuuid.id(title)
         };
 
-        console.log("New Note: " + newNote);
-
+        // Read all data from db.json as array and then push new note to it
         fs.readFile('./db/db.json', (err, data) => {
-            // err ? console.error(err) : console.log(data)
 
             let databaseParsed = JSON.parse(data);
             databaseParsed.push(newNote);
 
-            console.log(databaseParsed);
-
+            // Write array into new db.json file
             fs.writeFile('./db/db.json', JSON.stringify(databaseParsed), (err) =>
             err ? console.error(err) : console.log("New note added to JSON file")
             );
@@ -75,41 +73,38 @@ app.post('/api/notes', (req, res) => {
         res.status(500).json("Error posting new note");
     }
 });
-  
+
+// Remove note using note ID parameter
 app.delete('/api/notes/:id', (req, res) => {
 
     const id = req.params.id;
-
-    console.log("id: " + id);
 
     fs.readFile('./db/db.json', (err, data) => {
         err ? console.error(err) : console.log(data)
 
         let parsedDatabase = JSON.parse(data);
 
-        console.log(parsedDatabase);
-
+        // Filter out note all notes other than the one that has a matching ID
         const newDatabase = parsedDatabase.filter((note) => note.id !== id);
-
+        
         fs.writeFile('./db/db.json', JSON.stringify(newDatabase), (err) =>
         err ? console.error(err) : console.log("Removed note with id of: " + id)
         );
 
-        return res.json('Successfully deleted note with ID of ' + + id);
+        return res.json('Successfully deleted note with ID of ' + id);
     });
 });
 
+// Any other route that is not specified in the server routes will return index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html'))
 });
 
 // ------------------ Start Server -----------------------
-// listen() method is responsible for listening for incoming connections on the specified port 
 app.listen(PORT, () =>
     console.log(`Example app listening at http://localhost:${PORT}`)
 );
 
 // To Do
 
-// Comments
 // README
