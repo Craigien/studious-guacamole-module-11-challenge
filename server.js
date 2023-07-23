@@ -9,7 +9,7 @@ const jsonuuid = require('json-uuid');
 // Point to database file
 const database = 'db.json';
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const app = express();
 
